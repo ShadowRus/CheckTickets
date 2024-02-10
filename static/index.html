@@ -1,0 +1,79 @@
+<head>
+    <style>
+        /* Стиль для мобильного устройства */
+        @media (max-width: 767px) {
+            .upload-btn {
+                width: 100%;
+                height: 20vh;
+            }
+            .file-btn {
+                width: 100%;
+                height: 20vh;
+            }
+        }
+
+        /* Стиль для десктопа */
+        @media (min-width: 768px) {
+            .upload-btn {
+                width: 30vw;
+                height: 10vh;
+            }
+            .file-btn {
+                width: 30vw;
+                height: 10vh;
+            }
+        }
+    </style>
+    <script type="text/javascript">
+
+        // js code
+        //barcode with type
+        function onBarcode(code, type, base64) {
+            document.getElementById("barcode").innerHTML = "<pre>" + "code: " + code + "\ntype: " + type + "\nisBase64: " + base64 + "</pre>"
+            sendBarcodeToServer(code.toString())
+        }
+        //  загрузка исходного файла
+        function handleFileUpload() {
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Файл успешно загружен: " + data.filename);
+            })
+            .catch(error => {
+                console.error("Ошибка загрузки файла:", error);
+            });
+        }
+        // отправка на сервер значения
+        function sendBarcodeToServer(value) {
+            fetch("/barcode", {
+                method: "POST",
+                body: value,
+            })
+            .then(response => {
+                console.log("Значение отправлено на сервер:", value);
+            })
+            .catch(error => {
+                console.error("Ошибка отправки значения на сервер:", error);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h3>barcode with type</h3>
+    <p id="barcode">scan something</p>
+
+    <h3>Загрузка файла</h3>
+    <form enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file">
+        <br><br>
+        <button class="upload-btn" type="button" onclick="handleFileUpload()">Загрузить</button>
+    </form>
+</body>
