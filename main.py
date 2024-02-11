@@ -25,7 +25,7 @@ app = FastAPI(title="QR_Config")
 
 app.include_router(api_router)
 
-#deps.Base.metadata.create_all(bind=deps.engine)
+deps.Base.metadata.create_all(bind=deps.engine)
 
 if __name__ == "__main__":
     # Use this for debugging purposes only
