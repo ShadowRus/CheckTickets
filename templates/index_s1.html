@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Регистрация участников</title>
+    <link href="{{ url_for('static', path='/css/style.css') }}" rel="stylesheet">
+  <!-- Подключаем скрипт с логикой -->
+  <script src="{{ url_for('static', path='/js/script.js') }}"></script>
+</head>
+<body>
+
+  <!-- Получаем элементы страницы -->
+  <input id="inputSurname" type="text" placeholder="Введите фамилию участника"> <!-- поле для ввода фамилии -->
+  <button id="buttonSearch">Поиск по Фамилии</button> <!-- кнопка Поиск по Фамилии -->
+  <p id="textScan">Сканируйте код регистрации участника</p> <!-- текстовое поле Сканируйте код регистрации участника -->
+  <button id="buttonRegister">Зарегистрировать нового участника</button> <!-- кнопка Зарегистрировать нового участника -->
+  <div id="listParticipants"></div> <!-- список с radio-button участников -->
+  <button id="buttonPrint">Печать Бейджа</button> <!-- кнопка Печать Бейджа -->
+  <button id="buttonBack">Назад</button> <!-- кнопка Назад -->
+  <input id="inputName" type="text" placeholder="Введите имя участника"> <!-- поле для ввода имени -->
+  <input id="inputOrganization" type="text" placeholder="Введите организацию участника"> <!-- поле для ввода организации -->
+  <input id="inputPosition" type="text" placeholder="Введите должность участника"> <!-- поле для ввода должности -->
+  <button id="buttonSubmit">Зарегистрировать</button> <!-- кнопка Зарегистрировать -->
+
+
+</body>
+</html>

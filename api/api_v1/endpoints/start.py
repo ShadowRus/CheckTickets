@@ -17,7 +17,7 @@ router.mount("/static", StaticFiles(directory="static"), name="static")
 @router.get("/")
 async def index():
     # Открываем файл index.html, который содержит JavaScript код
-    with open("static/index.html", "r") as file:
+    with open("static/index_s2.html", "r") as file:
         html_content = file.read()
     return HTMLResponse(content=html_content, status_code=200)
 
@@ -31,9 +31,9 @@ async def upload_file(file: UploadFile = File(...),db: Session = Depends(deps.ge
 
     df = pd.read_excel(f"uploaded_files/{file.filename}",engine='openpyxl')
     print(df)
-    df.to_dict(orient='index')
-    for row
-    db.close()
+    # df.to_dict(orient='index')
+    # for row
+    # db.close()
     return {"filename": file.filename}
 
 @router.post("/barcode")
