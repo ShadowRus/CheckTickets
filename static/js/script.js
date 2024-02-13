@@ -8,6 +8,9 @@ let printButton = document.getElementById("printButton"); // кнопка Печ
 let backButton = document.getElementById("backButton"); // кнопка Назад
 let form = document.getElementById("form"); // форма для регистрации нового участника
 let submitButton = document.getElementById("submitButton"); // кнопка Зарегистрировать
+let barCode = document.getElementById("barcode"); // текстовое поле с ШК
+
+
 
 // Функция для скрытия элементов
 function hide(...elements) {
@@ -38,7 +41,21 @@ function createListItem(participant) {
   radio.name = "participant";
   radio.value = participant.id;
   let label = document.createElement("label");
-  label.textContent = `${participant.surname} ${participant.name} (${participant.organization}, ${participant.position})`;
+  //label.textContent = `${participant.surname} ${participant.name} (${participant.organization}, ${participant.position}) ${participant.check_status}`;
+  let check_status;
+  switch(participant.check_status) {
+    case 'Зарегистрирован':
+        check_status = '<span style="color: green;">' + participant.check_status + '</span>';
+        break;
+    case 'На регистрации':
+        check_status = '<span style="color: brown;">' + participant.check_status + '</span>';
+        break;
+    case 'Не зарегистрирован':
+        check_status = '<span style="color: red;">' + participant.check_status + '</span>';
+        break;
+    }
+
+  label.innerHTML = `${participant.surname} ${participant.name} (${participant.organization}, ${participant.position}) ${check_status}`;
   item.appendChild(radio);
   item.appendChild(label);
   return item;
@@ -50,7 +67,7 @@ function handleSearchResponse(response) {
     // Если ответ успешный, парсим json
     response.json().then((data) => {
       // Скрываем текущие элементы
-      hide(input, searchButton, scanText, registerButton);
+      hide(input, searchButton, scanText, registerButton,barCode);
       // Очищаем список
       clearList();
       // Добавляем элементы списка для каждого участника
@@ -100,6 +117,13 @@ function handleRegisterResponse(response) {
   }
 }
 
+
+// Функция для получения значений ШК
+function onBarcode(code, type, base64) {
+            barCode.innerHTML = code.toString()
+            fetch(`/barcode?code=${code.toString()}`).then(handleSearchResponse);
+        }
+
 // Добавляем обработчик события клика на кнопку Поиск по Фамилии
 searchButton.addEventListener("click", () => {
   // Получаем введенную фамилию
@@ -107,6 +131,7 @@ searchButton.addEventListener("click", () => {
   // Отправляем запрос к серверу с фамилией
   fetch(`/search?surname=${surname}`).then(handleSearchResponse);
 });
+
 
 // Добавляем обработчик события клика на кнопку Печать Бейджа
 printButton.addEventListener("click", () => {
@@ -124,13 +149,13 @@ printButton.addEventListener("click", () => {
 backButton.addEventListener("click", () => {
   // Возвращаемся на начальное состояние страницы
   hide(list, printButton, backButton, form, submitButton);
-  show(input, searchButton, scanText, registerButton);
+  show(input, searchButton, scanText, registerButton,barCode);
 });
 
 // Добавляем обработчик события клика на кнопку Зарегистрировать нового участника
 registerButton.addEventListener("click", () => {
   // Скрываем текущие элементы
-  hide(input, searchButton, scanText, registerButton);
+  hide(input, searchButton, scanText, registerButton,barCode);
   // Показываем форму, кнопку Зарегистрировать и кнопку Назад
   show(form, submitButton, backButton);
 });

@@ -1,4 +1,7 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter,Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from api.api_v1.api import api_router
 from api import deps
 import socket
@@ -24,6 +27,15 @@ root_router = APIRouter()
 app = FastAPI(title="QR_Config")
 
 app.include_router(api_router)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index_s2.html", {"request": request})
+
 
 deps.Base.metadata.create_all(bind=deps.engine)
 
