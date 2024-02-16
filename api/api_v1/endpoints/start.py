@@ -37,7 +37,7 @@ async def upload_file(file: UploadFile = File(...), db: Session = Depends(deps.g
         for row in data:
             visitor = Visitors(surname=data[row]['Surname'], name=data[row]['Name'],
                                organization=data[row]['Organization'], position=data[row]['Position'],
-                               regQR=data[row]['RegQR'],is_check=0, is_print=0,
+                               regQR=str(data[row]['RegQR']),is_check=0, is_print=0,
                                check_status = 'На регистрации',is_manual=0)
             db.add(visitor)
             db.commit()
@@ -118,6 +118,11 @@ async def prints(id, db: Session = Depends(deps.get_db)):
                     if r0.status_code == 200:
                         printer[i].is_online = 1
                         db.commit()
+                        st1 = str(visitor_temp.position) + str("\\& \\&") + str(visitor_temp.organization)
+                        if visitor_temp.regQR != None:
+                            st2 = str(visitor_temp.regQR)
+                        else:
+                            st2 = str(5000 + visitor_temp.id)
                         dict_new = {
                             "document": {
                                 "name": "documents",
@@ -126,7 +131,7 @@ async def prints(id, db: Session = Depends(deps.get_db)):
                                     {
                                         "type": "task",
                                         "code": str(visitor_temp.id) + str(visitor_temp.is_print),
-                                        "count": "1",
+                                        "count": "2",
                                         "values": [
                                             {
                                                 "id": "Surnam",
@@ -137,16 +142,12 @@ async def prints(id, db: Session = Depends(deps.get_db)):
                                                 "data": str(visitor_temp.name)
                                             },
                                             {
-                                                "id": "Position",
-                                                "data": str(visitor_temp.position)
-                                            },
-                                            {
                                                 "id": "Organization",
-                                                "data": str(visitor_temp.organization)
+                                                "data": st1
                                             },
                                             {
-                                                "id": "QR_ID",
-                                                "data": str(visitor_temp.id)
+                                                "id": "barcode",
+                                                "data":st2
                                             }
                                         ]
                                     }
@@ -154,6 +155,7 @@ async def prints(id, db: Session = Depends(deps.get_db)):
                             }
                         }
                         payload = {'Content-Type': 'application/json'}
+                        print(json.dumps(dict_new))
                         r1 = requests.post(
                             printer[i].url +':'+ str(printer[i].port)+"/api/v1/add/task?code=" + str(visitor_temp.id) + str(visitor_temp.is_print),
                             data=json.dumps(dict_new), headers=payload)
