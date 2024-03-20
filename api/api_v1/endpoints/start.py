@@ -118,7 +118,7 @@ async def prints(id, db: Session = Depends(deps.get_db)):
                     if r0.status_code == 200:
                         printer[i].is_online = 1
                         db.commit()
-                        st1 = str(visitor_temp.position) + str("\\& \\&") + str(visitor_temp.organization)
+                        st1 = str(visitor_temp.organization)
                         if visitor_temp.regQR != None:
                             st2 = str(visitor_temp.regQR)
                         else:
@@ -142,12 +142,16 @@ async def prints(id, db: Session = Depends(deps.get_db)):
                                                 "data": str(visitor_temp.name)
                                             },
                                             {
-                                                "id": "Organization",
+                                                "id": "Org",
                                                 "data": st1
                                             },
                                             {
-                                                "id": "barcode",
+                                                "id": "Barcode",
                                                 "data":st2
+                                            },
+                                            {
+                                                "id": "City",
+                                                "data":str(visitor_temp.position)
                                             }
                                         ]
                                     }
