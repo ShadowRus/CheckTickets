@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, UploadFile, File, Body, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -110,7 +112,8 @@ async def prints(id,re:Request, db: Session = Depends(deps.get_db)):
     print('Is connected from:')
     print(re.client.host)
     visitor_temp = db.query(Visitors).filter(Visitors.id == int(id)).first()
-    visitor_temp.check_in = now.strftime('%y-%m-%d-%H-%M-%S')
+
+    visitor_temp.check_in = datetime.datetime.now().strftime('%y-%m-%d-%H-%M')
     visitor_temp.is_check = 1
 
     printer = db.query(PrinterService).filter(PrinterService.is_default == 1).all()
@@ -214,6 +217,125 @@ async def prints(id,re:Request, db: Session = Depends(deps.get_db)):
                     printer[i].is_online = 0
                     db.commit()
 
+@router.get("/prints")
+async def prints_pack(value_1:int,value_2:int,re:Request, db: Session = Depends(deps.get_db)):
+    print('/prints')
+    for ii in range(value_2-value_1+1):
+        await asyncio.sleep(0.5)
+        id = value_1 +ii
+        print(datetime.datetime.now().strftime('%y-%m-%d-%H-%M'))
+        print('id: ' + str(id))
+        visitor_temp = db.query(Visitors).filter(Visitors.id == int(id)).first()
+        print('Surname: ' + str(visitor_temp.surname))
+        visitor_temp.check_in = datetime.datetime.now().strftime('%y-%m-%d-%H-%M')
+        visitor_temp.is_check = 1
+        db.commit()
+        db.refresh(visitor_temp)
 
 
+        printer = db.query(PrinterService).filter(PrinterService.is_default == 1).all()
+        if printer != None:
+            for i in range(len(printer)):
+                if printer[i].type == 2:
+                    try:
+                        r0 = requests.get(
+                            printer[i].url + ':' + str(printer[i].port) + '/api/v1/connect/printer?code=1', headers={},
+                            data={})
+                        print(printer[i].url + ':'+ str(printer[i].port) + '/api/v1/connect/printer?code=1')
+                        print(r0.status_code)
+                        if r0.status_code == 200:
+                            printer[i].is_online = 1
+                            db.commit()
+                            st1 = str(visitor_temp.organization)
+                            if visitor_temp.regQR != None:
+                                st2 = str(visitor_temp.regQR)
+                            else:
+                                st2 = str(5000 + visitor_temp.id)
+                            # dict_new = {
+                            #     "document": {
+                            #         "name": "documents",
+                            #         "protocol": "atolmsk",
+                            #         "details": [
+                            #             {
+                            #                 "type": "task",
+                            #                 "code": str(visitor_temp.id) + str(visitor_temp.is_print),
+                            #                 "count": "2",
+                            #                 "values": [
+                            #                     {
+                            #                         "id": "Surnam",
+                            #                         "data": str(visitor_temp.surname)
+                            #                     },
+                            #                     {
+                            #                         "id": "Name",
+                            #                         "data": str(visitor_temp.name)
+                            #                     },
+                            #                     {
+                            #                         "id": "Org",
+                            #                         "data": st1
+                            #                     },
+                            #                     {
+                            #                         "id": "Barcode",
+                            #                         "data":st2
+                            #                     },
+                            #                     {
+                            #                         "id": "City",
+                            #                         "data":str(visitor_temp.position)
+                            #                     }
+                            #                 ]
+                            #             }
+                            #         ]
+                            #     }
+                            # }
+                            #
+                            dict_new = {
+                                "document": {
+                                    "name": "documents",
+                                    "protocol": "atolmsk",
+                                    "details": [
+                                        {
+                                            "type": "task",
+                                            "code": str(visitor_temp.id) + str(visitor_temp.is_print),
+                                            "count": "2",
+                                            "values": [
+                                                {
+                                                    "id": "Surnam",
+                                                    "data": str(visitor_temp.surname)
+                                                },
+                                                {
+                                                    "id": "Name",
+                                                    "data": str(visitor_temp.name)
+                                                },
+                                                {
+                                                    "id": "City",
+                                                    "data": str(visitor_temp.position)
+                                                },
+                                                {
+                                                    "id": "Org",
+                                                    "data": str(visitor_temp.organization)
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                            payload = {'Content-Type': 'application/json'}
+                            r1 = requests.post(
+                                printer[i].url + ':' + str(printer[i].port) + "/api/v1/add/task?code=" + str(
+                                    visitor_temp.id) + str(visitor_temp.is_print),
+                                data=json.dumps(dict_new), headers=payload)
+                            if r1.status_code == 200:
+                                visitor_temp.is_print = visitor_temp.is_print + 1
+                                visitor_temp.check_status = 'Зарегистрирован'
+                                db.commit()
+                                i = len(printer)
+                                db.close()
+                            else:
+                                return JSONResponse(status_code=500, content={'status': f'Error {visitor_temp.id}'})
+                    except ConnectionError:
+                        printer[i].is_online = 0
+                        db.commit()
+
+@router.get("/visitors")
+async def visitors(db: Session = Depends(deps.get_db)):
+    return db.query(Visitors).all()
 
