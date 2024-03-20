@@ -27,6 +27,14 @@ class Users(Base):
     name = Column(String)
     code = Column(String)
 
+class Devices(Base):
+    __tablename__="Devices"
+    id = Column(Integer,primary_key=True,index=True)
+    is_connected = Column(String)
+    ip = Column(String,index=True)
+    printer_id = Column(Integer,index=True)
+    label_id = Column(Integer)
+
 class Template(Base):
     __tablename__ = "PrintTemplates"
     id = Column(Integer, primary_key=True, index=True)

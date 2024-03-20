@@ -24,6 +24,10 @@ SRC_DATA_BASE = config('SRC_DATA_BASE', default='./src/checktickets.db')
 router = APIRouter()
 now = datetime.datetime.now()
 
+@router.get("/getmyip")
+async def get_my_ip(request: Request):
+    client_host = request.client.host
+    return {"client_host": client_host}
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...), db: Session = Depends(deps.get_db)):
@@ -78,7 +82,7 @@ async def clear(db: Session = Depends(deps.get_db)):
 
 
 @router.get("/barcode")
-async def barcode(code, db: Session = Depends(deps.get_db)):
+async def barcode(code,re:Request, db: Session = Depends(deps.get_db)):
     visitor_temp = db.query(Visitors).filter(Visitors.regQR == str(code)).all()
     return visitor_temp
 
@@ -102,7 +106,9 @@ async def register(surname, name, organization, position, db: Session = Depends(
 
 
 @router.get("/print")
-async def prints(id, db: Session = Depends(deps.get_db)):
+async def prints(id,re:Request, db: Session = Depends(deps.get_db)):
+    print('Is connected from:')
+    print(re.client.host)
     visitor_temp = db.query(Visitors).filter(Visitors.id == int(id)).first()
     visitor_temp.check_in = now.strftime('%y-%m-%d-%H-%M-%S')
     visitor_temp.is_check = 1
@@ -123,6 +129,42 @@ async def prints(id, db: Session = Depends(deps.get_db)):
                             st2 = str(visitor_temp.regQR)
                         else:
                             st2 = str(5000 + visitor_temp.id)
+                        # dict_new = {
+                        #     "document": {
+                        #         "name": "documents",
+                        #         "protocol": "atolmsk",
+                        #         "details": [
+                        #             {
+                        #                 "type": "task",
+                        #                 "code": str(visitor_temp.id) + str(visitor_temp.is_print),
+                        #                 "count": "2",
+                        #                 "values": [
+                        #                     {
+                        #                         "id": "Surnam",
+                        #                         "data": str(visitor_temp.surname)
+                        #                     },
+                        #                     {
+                        #                         "id": "Name",
+                        #                         "data": str(visitor_temp.name)
+                        #                     },
+                        #                     {
+                        #                         "id": "Org",
+                        #                         "data": st1
+                        #                     },
+                        #                     {
+                        #                         "id": "Barcode",
+                        #                         "data":st2
+                        #                     },
+                        #                     {
+                        #                         "id": "City",
+                        #                         "data":str(visitor_temp.position)
+                        #                     }
+                        #                 ]
+                        #             }
+                        #         ]
+                        #     }
+                        # }
+                        #
                         dict_new = {
                             "document": {
                                 "name": "documents",
@@ -142,16 +184,12 @@ async def prints(id, db: Session = Depends(deps.get_db)):
                                                 "data": str(visitor_temp.name)
                                             },
                                             {
-                                                "id": "Org",
-                                                "data": st1
-                                            },
-                                            {
-                                                "id": "Barcode",
-                                                "data":st2
-                                            },
-                                            {
                                                 "id": "City",
-                                                "data":str(visitor_temp.position)
+                                                "data": str(visitor_temp.position)
+                                            },
+                                            {
+                                                "id": "Org",
+                                                "data": str(visitor_temp.organization)
                                             }
                                         ]
                                     }
