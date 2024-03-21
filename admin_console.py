@@ -19,14 +19,25 @@ def extract_ip():
 
 GET_VISITORS = 'http://'+str(extract_ip())+':'+str(8000)+ str('/visitors')
 
-if st.checkbox('Показать статистику регистрации'):
+
+if st.checkbox('Показать статистику регистрации',value=False):
+    if st.button('Обновить'):
+        st.rerun()
     re = requests.get(GET_VISITORS)
     j1 = re.json()
     df = pd.DataFrame.from_records(j1)
     df.set_index('id', inplace=True)
     df = df[['check_status', 'surname', 'name', 'position', 'organization', 'check_in', 'is_print']]
     st.data_editor(df)
-
+    df.to_excel('output.xlsx', index=False)
+    with open("output.xlsx", "rb") as f:
+        bytes_data = f.read()
+    st.download_button(
+        label="Скачать отчет о регистрациях",
+        data=bytes_data,
+        file_name='output.xlsx',
+        mime='application/vnd.ms-excel',
+    )
 
 
 

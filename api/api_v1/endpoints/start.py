@@ -218,10 +218,10 @@ async def prints(id,re:Request, db: Session = Depends(deps.get_db)):
                     db.commit()
 
 @router.get("/prints")
-async def prints_pack(value_1:int,value_2:int,re:Request, db: Session = Depends(deps.get_db)):
+async def prints_pack(value_1:int,value_2:int,sleep:float,re:Request, db: Session = Depends(deps.get_db)):
     print('/prints')
     for ii in range(value_2-value_1+1):
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(sleep)
         id = value_1 +ii
         print(datetime.datetime.now().strftime('%y-%m-%d-%H-%M'))
         print('id: ' + str(id))
@@ -251,42 +251,6 @@ async def prints_pack(value_1:int,value_2:int,re:Request, db: Session = Depends(
                                 st2 = str(visitor_temp.regQR)
                             else:
                                 st2 = str(5000 + visitor_temp.id)
-                            # dict_new = {
-                            #     "document": {
-                            #         "name": "documents",
-                            #         "protocol": "atolmsk",
-                            #         "details": [
-                            #             {
-                            #                 "type": "task",
-                            #                 "code": str(visitor_temp.id) + str(visitor_temp.is_print),
-                            #                 "count": "2",
-                            #                 "values": [
-                            #                     {
-                            #                         "id": "Surnam",
-                            #                         "data": str(visitor_temp.surname)
-                            #                     },
-                            #                     {
-                            #                         "id": "Name",
-                            #                         "data": str(visitor_temp.name)
-                            #                     },
-                            #                     {
-                            #                         "id": "Org",
-                            #                         "data": st1
-                            #                     },
-                            #                     {
-                            #                         "id": "Barcode",
-                            #                         "data":st2
-                            #                     },
-                            #                     {
-                            #                         "id": "City",
-                            #                         "data":str(visitor_temp.position)
-                            #                     }
-                            #                 ]
-                            #             }
-                            #         ]
-                            #     }
-                            # }
-                            #
                             dict_new = {
                                 "document": {
                                     "name": "documents",
@@ -306,18 +270,55 @@ async def prints_pack(value_1:int,value_2:int,re:Request, db: Session = Depends(
                                                     "data": str(visitor_temp.name)
                                                 },
                                                 {
-                                                    "id": "City",
-                                                    "data": str(visitor_temp.position)
+                                                    "id": "Org",
+                                                    "data": st1
                                                 },
                                                 {
-                                                    "id": "Org",
-                                                    "data": str(visitor_temp.organization)
+                                                    "id": "Barcode",
+                                                    "data":st2
+                                                },
+                                                {
+                                                    "id": "City",
+                                                    "data":str(visitor_temp.position)
                                                 }
                                             ]
                                         }
                                     ]
                                 }
                             }
+
+                            # dict_new = {
+                            #     "document": {
+                            #         "name": "documents",
+                            #         "protocol": "atolmsk",
+                            #         "details": [
+                            #             {
+                            #                 "type": "task",
+                            #                 "code": str(visitor_temp.id) + str(visitor_temp.is_print),
+                            #                 "count": "2",
+                            #                 "values": [
+                            #                     {
+                            #                         "id": "Surnam",
+                            #                         "data": str(visitor_temp.surname)
+                            #                     },
+                            #                     {
+                            #                         "id": "Name",
+                            #                         "data": str(visitor_temp.name)
+                            #                     },
+                            #                     {
+                            #                         "id": "City",
+                            #                         "data": str(visitor_temp.position)
+                            #                     },
+                            #                     {
+                            #                         "id": "Org",
+                            #                         "data": str(visitor_temp.organization)
+                            #                     }
+                            #                 ]
+                            #             }
+                            #         ]
+                            #     }
+                            # }
+                            #
                             payload = {'Content-Type': 'application/json'}
                             r1 = requests.post(
                                 printer[i].url + ':' + str(printer[i].port) + "/api/v1/add/task?code=" + str(
