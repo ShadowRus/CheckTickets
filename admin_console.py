@@ -17,6 +17,12 @@ def extract_ip():
         st.close()
     return IP
 
+def str_to_num(s):
+    try:
+        return int(s)  # пробуем преобразовать в целое число
+    except ValueError:
+        return s
+
 SRC_DIR = config('SRC_DIR',default='./src')
 PORT= config('PORT',default=8000)
 GET_VISITORS = config('GET_VISITORS',default = '/visitors')
@@ -78,10 +84,12 @@ if st.session_state['action'] == 'Показать статистику':
     # # Выполняем ресемплинг данных по минутам и считаем количество записей на каждую минуту
     # resampled = df.resample('min', on='check_in').count()
     # st.data_editor(resampled['check_status'])
-
+if 'visit' not in st.session_state:
+    st.session_state['visit'] = {}
 if st.session_state['action'] == 'Поиск и Зарегистрировать участника':
     j1={}
-    if st.checkbox('Новый участник',value=False):
+    if st.checkbox('Новый участник',value=False,key = 'new_visit'):
+        st.session_state['visit'] = {}
         st.markdown(
             "Если к вам обратился гость :red[**без QR-кода для регистрации**] и его :red[**фамилии** нет в списках],"
             "то необходимо **сразу же обратиться к организаторам** мероприятия со стороны АТОЛ. \r\n"
@@ -92,6 +100,7 @@ if st.session_state['action'] == 'Поиск и Зарегистрировать
         st.text_input('Организация', key='organization')
         st.text_input('Город участника', key='position')
         if st.button('Зарегистрировать'):
+
             params = {
                 'surname': st.session_state['surname'],
                 'name': st.session_state['name'],
@@ -100,34 +109,44 @@ if st.session_state['action'] == 'Поиск и Зарегистрировать
             }
             # Отправляем GET запрос
             response = requests.get(str(SERVER_URL+NEW_VISITORS), params=params)
-            j1 = response.json()
+            j1 = [response.json()]
     else:
         st.text_input('Поиск по фамилии или номеру участника', key='search_data')
         if st.button('Поиск'):
-            if type(st.session_state['search_data']) == str:
+            #if 'visit' in st.session_state:
+            st.session_state['visit'] = {}
+            if type(str_to_num(st.session_state['search_data'])) == int:
+                response = requests.get(str(SERVER_URL + SEARCH_BARCODE),
+                                        params={'code': str_to_num(st.session_state['search_data'])})
+            else:
                 response = requests.get(str(SERVER_URL + SEARCH_SURNAME),
                                         params={'surname': st.session_state['search_data']})
-            if type(st.session_state['search_data']) == int:
-                response = requests.get(str(SERVER_URL + SEARCH_BARCODE),
-                                        params={'code': st.session_state['search_data']})
+
             j1 = response.json()
-            st.write(j1)
-            st.write(j1[0]['name'])
-            j1 = j1[0]
-    if 'name' in j1:
-        name = j1['name']
-        surname = j1['surname']
-        organization = j1['organization']
-        position = j1['position']
-        id_visitor = j1['id']
-        st.markdown('Вы зарегистрировали участника', unsafe_allow_html=True)
-        st.markdown(f'Имя: **{name}**', unsafe_allow_html=True)
-        st.markdown(f'Фамилия: **{surname}**', unsafe_allow_html=True)
-        st.markdown(f'Организация: **{organization}**', unsafe_allow_html=True)
-        st.markdown(f'Город участника: **{position}**', unsafe_allow_html=True)
-    if st.button('Распечать бейдж'):
-        if id_visitor != None:
-            response = requests.get(str(SERVER_URL + PRINT), params={'id': int(id_visitor)})
+
+    for i in range(len(j1)):
+        if 'name' in j1[i]:
+
+            name = j1[i]['name']
+            surname = j1[i]['surname']
+            if surname[-1] == ' ':
+                surname = surname[:-1]
+            organization = j1[i]['organization']
+            position = j1[i]['position']
+            id_visitor = j1[i]['id']
+            status = j1[i]['check_status']
+            if status == 'Зарегистрирован':
+                color = 'green'
+            else:
+                color='red'
+            st.session_state['visit'][f" {name} **{surname}** ({organization}, {position} ) :{color}[**{status}**]"] = id_visitor
+    st.radio(' ',st.session_state['visit'].keys(),label_visibility='hidden',key='print_ch')
+    if st.button('Распечать бейдж', key='print'):
+        response = requests.get(str(SERVER_URL + PRINT), params={'id': int(st.session_state['visit'][st.session_state['print_ch']])})
+        st.session_state['visit'] = {}
+
+
+
 
 
 

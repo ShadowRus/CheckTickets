@@ -1,10 +1,10 @@
 import asyncio
-
+from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Body, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import HTMLResponse
-from models.Visitors import Visitors, Users,Template,TemplateResponse,PrinterRespone,PrinterService
+from models.Visitors import Visitors, Devices,Users,Template,TemplateResponse,PrinterRespone,PrinterService
 from sqlalchemy.orm import Session
 from sqlalchemy import Column, Integer, String
 import pandas as pd
@@ -185,6 +185,26 @@ async def register(surname, name, organization, position, db: Session = Depends(
 #                 except ConnectionError:
 #                     printer[i].is_online = 0
 #                     db.commit()
+@router.get("/device")
+async def devices(ip4:str,is_connected:bool| None=None,printer_id: Optional[int] = None,
+                  label_id: Optional[int] = None,db: Session = Depends(deps.get_db())):
+
+    if ip4 and db.query(Devices).filter(Devices.ip == ip4).first() is not None:
+        device_temp = db.query(Devices).filter(Devices.ip == ip4).first()
+        if printer_id is not None:
+            device_temp.printer_id = printer_id
+        if label_id is not None:
+            device_temp.label_id = label_id
+        if is_connected is not None:
+            device_temp.is_connected = is_connected
+        db.commit()
+        db.refresh(device_temp)
+    else:
+        device_temp = Devices(ip = ip4,is_connected=is_connected,printer_id=printer_id,label_id=label_id)
+        db.add(device_temp)
+        db.commit()
+        db.refresh(device_temp)
+    return
 
 @router.get("/print")
 async def prints(id,re:Request, db: Session = Depends(deps.get_db)):
@@ -199,6 +219,7 @@ async def prints(id,re:Request, db: Session = Depends(deps.get_db)):
     print(printer.url)
     if printer != None:
         try:
+            # проверка, что сервис доступен
             r0 = requests.get(printer.url + ':' + str(printer.port) + '/api/v1/connect/printer?code=1',
                               headers={}, data={})
             print(printer.url + str(printer.port) + '/api/v1/connect/printer?code=1')
