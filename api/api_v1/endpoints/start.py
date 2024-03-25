@@ -185,26 +185,26 @@ async def register(surname, name, organization, position, db: Session = Depends(
 #                 except ConnectionError:
 #                     printer[i].is_online = 0
 #                     db.commit()
-@router.get("/device")
-async def devices(ip4:str,is_connected:bool| None=None,printer_id: Optional[int] = None,
-                  label_id: Optional[int] = None,db: Session = Depends(deps.get_db())):
-
-    if ip4 and db.query(Devices).filter(Devices.ip == ip4).first() is not None:
-        device_temp = db.query(Devices).filter(Devices.ip == ip4).first()
-        if printer_id is not None:
-            device_temp.printer_id = printer_id
-        if label_id is not None:
-            device_temp.label_id = label_id
-        if is_connected is not None:
-            device_temp.is_connected = is_connected
-        db.commit()
-        db.refresh(device_temp)
-    else:
-        device_temp = Devices(ip = ip4,is_connected=is_connected,printer_id=printer_id,label_id=label_id)
-        db.add(device_temp)
-        db.commit()
-        db.refresh(device_temp)
-    return
+# @router.get("/device")
+# async def devices(ip4:str,is_connected:bool| None=None,printer_id: Optional[int] = None,
+#                   label_id: Optional[int] = None,db: Session = Depends(deps.get_db())):
+#
+#     if ip4 and db.query(Devices).filter(Devices.ip == ip4).first() is not None:
+#         device_temp = db.query(Devices).filter(Devices.ip == ip4).first()
+#         if printer_id is not None:
+#             device_temp.printer_id = printer_id
+#         if label_id is not None:
+#             device_temp.label_id = label_id
+#         if is_connected is not None:
+#             device_temp.is_connected = is_connected
+#         db.commit()
+#         db.refresh(device_temp)
+#     else:
+#         device_temp = Devices(ip = ip4,is_connected=is_connected,printer_id=printer_id,label_id=label_id)
+#         db.add(device_temp)
+#         db.commit()
+#         db.refresh(device_temp)
+#     return
 
 @router.get("/print")
 async def prints(id,re:Request, db: Session = Depends(deps.get_db)):
@@ -216,13 +216,15 @@ async def prints(id,re:Request, db: Session = Depends(deps.get_db)):
     visitor_temp.is_check = 1
 
     printer = db.query(PrinterService).filter(PrinterService.url == str('http://'+ str(re.client.host))).first()
+    if printer == None:
+        printer = db.query(PrinterService).filter(PrinterService.is_default== 1).first()
     print(printer.url)
     if printer != None:
         try:
             # проверка, что сервис доступен
             r0 = requests.get(printer.url + ':' + str(printer.port) + '/api/v1/connect/printer?code=1',
                               headers={}, data={})
-            print(printer.url + str(printer.port) + '/api/v1/connect/printer?code=1')
+            print(printer.url +':'+ str(printer.port) + '/api/v1/connect/printer?code=1')
             print(r0.status_code)
             if r0.status_code == 200:
                 printer.is_online = 1
