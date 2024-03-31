@@ -48,12 +48,12 @@ if st.session_state['action'] == 'Показать статистику':
             st.rerun()
     with c2:
         df.to_excel('Статус регистраций на БПК-2024.xlsx', index=False)
-        with open('Статус регистраций на БПК-2024.xlsx', "rb") as f:
+        with open('src/Статус регистраций на БПК-2024.xlsx', "rb") as f:
             bytes_data = f.read()
         st.download_button(
             label="Скачать отчет о регистрациях",
             data=bytes_data,
-            file_name='Статус регистраций на БПК-2024.xlsx',
+            file_name='src/Статус регистраций на БПК-2024.xlsx',
             mime='application/vnd.ms-excel',
         )
 
