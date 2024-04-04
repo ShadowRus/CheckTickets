@@ -1,4 +1,5 @@
-from fastapi import APIRouter, UploadFile, File, Depends, Request
+from fastapi import APIRouter, UploadFile, File, Depends, Request,Body
+from typing import Dict
 from fastapi.responses import JSONResponse
 
 from models.CrptDM import DMCode,CRPT
@@ -60,23 +61,27 @@ def template(code:str,db: Session = Depends(deps.get_db)):
     if 5 ==5 :
         import socket
 
+
         #data1= 'SGVsbG8gd29ybGQ='
         data1= code
+        print(len(code))
         print(data1)
+
         #data1 = decode_base64(data1)
         # Декодируем строку из Base64
-        #data1 = base64.b64decode(data1)
+        data1 = base64.b64decode(data1).decode('utf-8')
+        print(data1)
 
         # Преобразовываем декодированные байты в строку
         #data1 = data1.decode('utf-8')
 
         # Заменяем символы GS и FNC1 на их шестнадцатеричное представление
-        #data1 = data1.replace('\x1D', '1D')
-        print(data1)
+        data1 = data1.replace('@', '_1D')
+        data1 = data1
 
         # Создаем сокет
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = '192.168.2.66'
+        host = '192.168.0.101'
         port = 9100
         # Подключаемся к принтеру этикеток (замените 'hostname' и 'port' на ваш принтер)
         s.connect((host, port))
@@ -86,6 +91,43 @@ def template(code:str,db: Session = Depends(deps.get_db)):
             for line in file:
                 # Заменяем DATA на пользовательское значение, если оно присутствует
                 line = line.replace('DATA', data1)
+
+                # Отправляем строку на принтер
+                print(line.encode())
+                s.send(line.encode())
+
+        # Закрываем сокет
+        s.close()
+
+        return JSONResponse(status_code=200, content={'status': 'Success'})
+
+@router.post("/scanner")
+async def create_item(item: Dict = Body(...)):
+    # Теперь `item` - это произвольный JSON объект (словарь в Python)
+    print(item)
+    return JSONResponse(status_code=200, content={'status': 'Success'})
+
+
+@router.get("/templ", summary="Получаем DATAMATRIX",
+             description="")
+def template(name:str,db: Session = Depends(deps.get_db)):
+    if 5 ==5 :
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        host = '192.168.0.112'
+        port = 9100
+        # Подключаемся к принтеру этикеток (замените 'hostname' и 'port' на ваш принтер)
+        s.connect((host, port))
+        # Открываем файл
+        name = name+ str(',')
+        data1 =str('вставай,')
+        data2= str('мы все починили')
+        with open('src/maria_white.txt', 'r') as file:
+            for line in file:
+                # Заменяем DATA на пользовательское значение, если оно присутствует
+                line = line.replace('NAME', str(name))
+                line = line.replace('DATA1', data1)
+                line = line.replace('DATA2', data2)
 
                 # Отправляем строку на принтер
                 print(line.encode())

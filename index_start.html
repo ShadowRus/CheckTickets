@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Печать Этикетки</title>
+<script>
+  function saveAddress() {
+    var ip = document.getElementById('ip').value;
+    localStorage.setItem('ip', ip);
+    alert('Адрес сохранен: ' + ip);
+  }
+
+  function printLabel() {
+    var data = document.getElementById('data').value;
+    var ip = localStorage.getItem('ip');
+    var json = JSON.stringify({
+      "document": {
+        "name": "documents",
+        "protocol": "atolmsk",
+        "details": [{
+          "type": "task",
+          "code": data,
+          "count": "1",
+          "values": [{
+            "id": "DATA",
+            "data": data
+          }]
+        }]
+      }
+    });
+
+    fetch('http://' + ip, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: json
+    })
+    .then(function(response) {
+      if (response.status === 200) {
+        alert('Этикетка распечатана');
+      } else {
+        alert('Ошибка: ' + response.status);
+      }
+    })
+    .catch(function(error) {
+      console.error('Ошибка:', error);
+    });
+  }
+</script>
+</head>
+<body>
+  <label for="ip">Введите IP4:Port ресурса:</label>
+  <input type="text" id="ip" placeholder="192.168.0.112:10001/api/v1/add/template">
+  <button onclick="saveAddress()">Запомнить</button>
+  <br><br>
+  <label for="data">Введите данные:</label>
+  <input type="text" id="data" placeholder="Данные для печати">
+  <button onclick="printLabel()">Печать</button>
+</body>
+</html>
