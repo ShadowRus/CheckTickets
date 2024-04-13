@@ -76,7 +76,7 @@ def template(code:str,db: Session = Depends(deps.get_db)):
         #data1 = data1.decode('utf-8')
 
         # Заменяем символы GS и FNC1 на их шестнадцатеричное представление
-        data1 = data1.replace('@', '_1D')
+        data1 = data1.replace('@', '\\1D')
         data1 = data1
 
         # Создаем сокет
@@ -87,7 +87,7 @@ def template(code:str,db: Session = Depends(deps.get_db)):
         s.connect((host, port))
 
         # Открываем файл
-        with open('src/crpt_label.txt', 'r') as file:
+        with open('src/crpt_zebra.txt', 'r') as file:
             for line in file:
                 # Заменяем DATA на пользовательское значение, если оно присутствует
                 line = line.replace('DATA', data1)
@@ -108,8 +108,7 @@ async def create_item(item: Dict = Body(...)):
     return JSONResponse(status_code=200, content={'status': 'Success'})
 
 
-@router.get("/templ", summary="Получаем DATAMATRIX",
-             description="")
+@router.get("/templ")
 def template(name:str,db: Session = Depends(deps.get_db)):
     if 5 ==5 :
         import socket
@@ -137,3 +136,33 @@ def template(name:str,db: Session = Depends(deps.get_db)):
         s.close()
 
         return JSONResponse(status_code=200, content={'status': 'Success'})
+
+
+@router.get("/start_label")
+async def exp_label(code:str):
+    p1_tt42 = '192.168.0.103'
+    p2_631 = '192.168.0.101'
+    p3_tt44 ='192.168.0.102'
+    port = 9100
+    import socket
+    s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Подключаемся к принтеру этикеток (замените 'hostname' и 'port' на ваш принтер)
+    s1.connect((p3_tt44, port))
+    s2.connect((p2_631, port))
+    s3.connect((p1_tt42, port))
+    # Открываем файл
+    with open('src/webinar.txt', 'r') as file:
+        for line in file:
+            # Отправляем строку на принтер
+            print(line.encode())
+            s1.send(line.encode())
+            s2.send(line.encode())
+            s3.send(line.encode())
+    # Закрываем сокет
+    s1.close()
+    s2.close()
+    s3.close()
+
+    return JSONResponse(status_code=200, content={'status': 'Success'})

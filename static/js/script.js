@@ -130,6 +130,12 @@ function onBarcode(code, type, base64) {
             fetch(`/crpt?code=${code.toString()}`).then(handleSearchResponse);
         }
 
+//// Функция для получения значений ШК
+//function onBarcode(code, type, base64) {
+//            barCode.innerHTML = code.toString()
+//            fetch(`/start_label?code=${code.toString()}`).then(handleSearchResponse);
+//        }
+
 
 // Добавляем обработчик события клика на кнопку Поиск по Фамилии
 searchButton.addEventListener("click", () => {
