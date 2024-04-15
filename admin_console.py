@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import socket
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from decouple import config
 import os
 

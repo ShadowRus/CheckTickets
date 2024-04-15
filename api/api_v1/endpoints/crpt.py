@@ -109,7 +109,7 @@ async def create_item(item: Dict = Body(...)):
 
 
 @router.get("/templ")
-def template(name:str,db: Session = Depends(deps.get_db)):
+def template(name:str,id_template:str,db: Session = Depends(deps.get_db)):
     if 5 ==5 :
         import socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -121,7 +121,11 @@ def template(name:str,db: Session = Depends(deps.get_db)):
         name = name+ str(',')
         data1 =str('вставай,')
         data2= str('мы все починили')
-        with open('src/maria_white.txt', 'r') as file:
+        if id_template == '1':
+            file_template = 'src/maria_white.txt'
+        elif id_template == '2':
+            file_template = 'src/maria_red.txt'
+        with open(file_template, 'r') as file:
             for line in file:
                 # Заменяем DATA на пользовательское значение, если оно присутствует
                 line = line.replace('NAME', str(name))
