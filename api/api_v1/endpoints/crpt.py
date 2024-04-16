@@ -109,11 +109,11 @@ async def create_item(item: Dict = Body(...)):
 
 
 @router.get("/templ")
-def template(name:str,id_template:str,host:str,db: Session = Depends(deps.get_db)):
+def template(name:str,id_template:str,host1:str,db: Session = Depends(deps.get_db)):
     if 5 ==5 :
         import socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = host
+        host = host1
         port = 9100
         # Подключаемся к принтеру этикеток (замените 'hostname' и 'port' на ваш принтер)
         s.connect((host, port))
