@@ -81,7 +81,7 @@ def template(code:str,db: Session = Depends(deps.get_db)):
 
         # Создаем сокет
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = '192.168.0.101'
+        host = '192.168.0.120'
         port = 9100
         # Подключаемся к принтеру этикеток (замените 'hostname' и 'port' на ваш принтер)
         s.connect((host, port))
@@ -109,11 +109,11 @@ async def create_item(item: Dict = Body(...)):
 
 
 @router.get("/templ")
-def template(name:str,id_template:str,db: Session = Depends(deps.get_db)):
+def template(name:str,id_template:str,host:str,db: Session = Depends(deps.get_db)):
     if 5 ==5 :
         import socket
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = '192.168.0.112'
+        host = host
         port = 9100
         # Подключаемся к принтеру этикеток (замените 'hostname' и 'port' на ваш принтер)
         s.connect((host, port))
